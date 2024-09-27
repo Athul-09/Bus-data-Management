@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager Dashboard - Bus Availability</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #EDF7FA; /* Updated background color */
+        }
+
+        header {
+            background-color: #5F6CAF; /* Updated background color */
+            color: #fff;
+            padding: 1em;
+            text-align: center;
+        }
+
+        nav {
+            background-color: #FFB677; /* Updated background color */
+            padding: 1em;
+            text-align: center;
+        }
+
+        nav a {
+            color: #fff;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+
+        main {
+            padding: 20px;
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #5F6CAF; /* Updated background color */
+            color: #fff;
+        }
+
+        form {
+            max-width: 400px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border: 2px solid #ddd;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 16px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #FFB677; /* Updated background color */
+            color: #fff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>Buss Pass - Manager Dashboard</h1>
+    </header>
+
+    <nav>
+        <a href="#" onclick="toggleForm('add')">Add Bus</a>
+        <a href="#" onclick="toggleForm('update')">Update Bus</a>
+        <a href="#" onclick="toggleForm('delete')">Delete Bus</a>
+        <a href="#" onclick="displayBuses()">View Buses</a>
+        <a href="#" onclick="toggleForm('profile')">Profile</a> <!-- Added profile link -->
+        <a href="login.html">Logout</a>
+    </nav>
+
+    <main>
+        <form id="addBusForm" onsubmit="submitForm(event, 'add')" style="display: none;">
+            <label for="busNo">Bus No:</label>
+            <input type="text" id="busNo" name="busNo" required>
+
+            <label for="routeNo">Route No:</label>
+            <input type="text" id="routeNo" name="routeNo" required>
+
+            <label for="startingTime">Starting Time:</label>
+            <input type="text" id="startingTime" name="startingTime" required>
+
+            <label for="departureplace">Departure Place:</label>
+            <input type="text" id="departureplace" name="departureplace" required>
+
+            <label for="destination">Destination:</label>
+            <input type="text" id="destination" name="destination" required>
+
+            <label for="availability">Availability:</label>
+            <input type="text" id="availability" name="availability" required>
+
+            <label for="busType">Bus Type:</label>
+            <input type="text" id="busType" name="busType" required>
+
+            <button type="submit">Add Bus</button>
+        </form>
+
+        <form id="updateBusForm" onsubmit="submitForm(event, 'update')" style="display: none;">
+            <label for="updateBusId">Bus ID to Update:</label>
+            <input type="text" id="updateBusId" name="updateBusId" required>
+
+            <label for="updateStartingTime">New Starting Time:</label>
+            <input type="text" id="updateStartingTime" name="updateStartingTime">
+
+            <label for="updateDeparturePlace">New Departure Place:</label>
+            <input type="text" id="updateDeparturePlace" name="updateDeparturePlace">
+
+            <label for="updateDestination">New Destination:</label>
+            <input type="text" id="updateDestination" name="updateDestination">
+
+            <!-- Add more fields as needed for other updates -->
+
+            <button type="submit">Update Bus</button>
+        </form>
+
+        <form id="deleteBusForm" onsubmit="submitForm(event, 'delete')" style="display: none;">
+            <label for="deleteBusId">Bus ID to Delete:</label>
+            <input type="text" id="deleteBusId" name="deleteBusId" required>
+
+            <button type="submit">Delete Bus</button>
+        </form>
+
+        <!-- Profile form -->
+        <form id="profileForm" onsubmit="submitForm(event, 'profile')" style="display: none;">
+            <label for="newUsername">New Username:</label>
+            <input type="text" id="newUsername" name="newUsername" required>
+            <label for="newPassword">New Password:</label>
+            <input type="password" id="newPassword" name="newPassword" required>
+            <button type="submit">Change Profile</button>
+        </form>
+
+        <table id="busTable">
+            <tr>
+                <th>Bus ID</th> <!-- Added Bus ID column -->
+                <th>Bus No</th>
+                <th>Route No</th>
+                <th>Starting Time</th>
+                <th>Departure Place</th>
+                <th>Destination</th>
+                <th>Availability</th>
+                <th>Bus Type</th>
+            </tr>
+            <!-- Bus data will be dynamically added here -->
+        </table>
+    </main>
+
+    <script>
+        function toggleForm(formType) {
+            const addBusForm = document.getElementById('addBusForm');
+            const updateBusForm = document.getElementById('updateBusForm');
+            const deleteBusForm = document.getElementById('deleteBusForm');
+            const profileForm = document.getElementById('profileForm'); // Get profile form
+
+            addBusForm.style.display = 'none';
+            updateBusForm.style.display = 'none';
+            deleteBusForm.style.display = 'none';
+            profileForm.style.display = 'none'; // Hide profile form
+
+            if (formType === 'add') {
+                addBusForm.style.display = 'block';
+            } else if (formType === 'update') {
+                updateBusForm.style.display = 'block';
+            } else if (formType === 'delete') {
+                deleteBusForm.style.display = 'block';
+            } else if (formType === 'profile') { // Show profile form
+                profileForm.style.display = 'block';
+            }
+        }
+
+        function submitForm(event, formType) {
+            event.preventDefault();
+
+            if (formType === 'add') {
+                addBus();
+            } else if (formType === 'update') {
+                updateBus();
+            } else if (formType === 'delete') {
+                deleteBus();
+            } else if (formType === 'profile') { // Call profile function
+                changeProfile();
+            }
+        }
+
+        // Function to change profile
+        function changeProfile() {
+            const newUsername = document.getElementById('newUsername').value;
+            const newPassword = document.getElementById('newPassword').value;
+
+            // Prepare data to send to the backend for profile update
+            const profileData = {
+                newUsername: newUsername,
+                newPassword: newPassword,
+            };
+
+            // Send a POST request to the backend for profile update
+            fetch('http://localhost:5500/api/update-profile', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(profileData),
+            })
+                .then(response => {
+                    if (response.ok) {
+                        // Profile updated successfully, you can handle the response as needed
+                        console.log('Profile updated successfully');
+                        // Clear the form fields
+                        clearForm('profileForm');
+                    } else {
+                        throw new Error('Failed to update profile');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating profile:', error);
+                    // Handle errors, display an alert, etc.
+                });
+        }
+        function addBus() {
+    const busNo = document.getElementById('busNo').value;
+    const routeNo = document.getElementById('routeNo').value;
+    const startingTime = document.getElementById('startingTime').value;
+    const departureplace = document.getElementById('departureplace').value;
+    const destination = document.getElementById('destination').value;
+    const availability = document.getElementById('availability').value;
+    const busType = document.getElementById('busType').value;
+
+    const newBus = {
+        busNo: busNo,
+        routeNo: routeNo,
+        startingTime: startingTime,
+        departureplace: departureplace,
+        destination: destination,
+        availability: availability,
+        busType: busType
+    };
+
+    fetch('http://localhost:5500/api/add-bus', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newBus),
+    })
+    .then(response => {
+        if (response.ok) {
+            console.log('Bus added successfully');
+            clearForm('addBusForm');
+            displayBuses(); // Refresh the bus table
+        } else {
+            throw new Error('Failed to add bus');
+        }
+    })
+    .catch(error => {
+        console.error('Error adding bus:', error);
+        // Handle errors, display an alert, etc.
+    });
+}
+
+// Function to update a bus
+function updateBus() {
+    const busId = document.getElementById('updateBusId').value;
+    const startingTime = document.getElementById('updateStartingTime').value;
+    const departurePlace = document.getElementById('updateDeparturePlace').value;
+    const destination = document.getElementById('updateDestination').value;
+
+    const updatedBus = {
+        busId: busId,
+        startingTime: startingTime,
+        departurePlace: departurePlace,
+        destination: destination
+    };
+
+    fetch('http://localhost:5500/api/update-bus', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedBus),
+    })
+    .then(response => {
+        if (response.ok) {
+            console.log('Bus updated successfully');
+            clearForm('updateBusForm');
+            displayBuses(); // Refresh the bus table
+        } else {
+            throw new Error('Failed to update bus');
+        }
+    })
+    .catch(error => {
+        console.error('Error updating bus:', error);
+        // Handle errors, display an alert, etc.
+    });
+}
+
+// Function to delete a bus
+function deleteBus() {
+    const busId = document.getElementById('deleteBusId').value;
+
+    const deleteData = {
+        busId: busId
+    };
+
+    fetch('http://localhost:5500/api/delete-bus', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(deleteData),
+    })
+    .then(response => {
+        if (response.ok) {
+            console.log('Bus deleted successfully');
+            clearForm('deleteBusForm');
+            displayBuses(); // Refresh the bus table
+        } else {
+            throw new Error('Failed to delete bus');
+        }
+    })
+    .catch(error => {
+        console.error('Error deleting bus:', error);
+        // Handle errors, display an alert, etc.
+    });
+}
+
+// Function to display buses
+function formatTimeIn24Hours(timeString) {
+    const [hours, minutes] = timeString.split(':');
+    return `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`;
+}
+
+// Function to display buses
+function displayBuses() {
+    fetch('http://localhost:5500/api/get-buses')
+        .then(response => response.json())
+        .then(data => {
+            const table = document.getElementById('busTable');
+            // Clear existing table rows
+            table.innerHTML = '<tr><th>Bus ID</th><th>Bus No</th><th>Route No</th><th>Starting Time</th><th>Departure Place</th><th>Destination</th><th>Availability</th><th>Bus Type</th></tr>';
+
+            // Populate table with fetched data
+            data.forEach(bus => {
+                const row = table.insertRow();
+                row.innerHTML = `<td>${bus.BusId}</td><td>${bus.BusNo}</td><td>${bus.RouteNo}</td><td>${formatTimeIn24Hours(bus.DepartureTime)}</td><td>${bus.DeparturePlace}</td><td>${bus.Destination}</td><td>${bus.availability}</td><td>${bus.BusType}</td>`
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching buses:', error);
+            // Handle errors, display an alert, etc.
+        });
+}
+
+// Function to clear form fields
+function clearForm(formId) {
+    const form = document.getElementById(formId);
+    form.reset();
+}
+        // Other functions for add, update, delete buses...
+    </script>
+</body>
+
+</html>

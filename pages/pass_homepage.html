@@ -1,0 +1,195 @@
+<!-- passenger-dashboard.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Passenger Dashboard - Bus Availability</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #EDF7FA; /* Updated background color */
+        }
+
+        header {
+            background-color: #5F6CAF; /* Updated background color */
+            color: #fff;
+            padding: 1em;
+            text-align: center;
+        }
+
+        nav {
+            background-color: #FFB677; /* Updated background color */
+            padding: 1em;
+            text-align: center;
+        }
+
+        nav a {
+            color: #fff;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+
+        main {
+            padding: 20px;
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #5F6CAF; /* Updated background color */
+            color: #fff;
+        }
+
+        form {
+            max-width: 400px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border: 2px solid #ddd;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 16px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #FFB677; /* Updated background color */
+            color: #fff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>Buss Pass - Passenger Dashboard</h1>
+    </header>
+
+    <nav>
+        <a href="#" onclick="searchBuses()">Search Buses</a>
+        <a href="login.html">Logout</a>
+    </nav>
+
+    <main>
+        <form id="searchForm" onsubmit="searchBuses(event)">
+            <label for="from">From:</label>
+            <input type="text" id="from" name="from">
+
+            <label for="to">To:</label>
+            <input type="text" id="to" name="to">
+
+            <label for="busIdRouteId">Bus ID :</label>
+            <input type="text" id="busIdRouteId" name="busIdRouteId">
+
+            <label for="busType">Bus Type:</label>
+            <select id="busType" name="busType">
+                <option value="pvt">Pvt</option>
+                <option value="govt">Govt</option>
+                <!-- Add more options as needed -->
+            </select>
+
+            <button type="submit">Search Buses</button>
+        </form>
+
+        <table id="busTable">
+            <tr>
+                <th>Bus ID</th>
+                <th>Bus No</th>
+                <th>Route No</th>
+                <th>Starting Time</th>
+                <th>Departure Place</th>
+                <th>Destination</th>
+                <th>Availability</th>
+                <th>Bus Type</th>
+            </tr>
+            <!-- Bus search results will be dynamically added here -->
+        </table>
+    </main>
+
+    <script>
+        // Function to search buses based on input criteria
+        function searchBuses(event) {
+            event.preventDefault();
+
+            const from = document.getElementById('from').value;
+            const to = document.getElementById('to').value;
+            const busIdRouteId = document.getElementById('busIdRouteId').value;
+            const busType = document.getElementById('busType').value;
+
+            // Send a POST request to the backend to search for buses
+            fetch('http://localhost:5500/api/search-buses', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+                },
+                body: JSON.stringify({ from, to, busIdRouteId, busType }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    displayBusSearchResults(data);
+                })
+                .catch(error => {
+                    console.error('Error searching buses:', error);
+                    window.alert('An error occurred while searching for buses. Please try again.');
+                });
+        }
+
+        // Function to display search results in the table
+        function displayBusSearchResults(buses) {
+            const table = document.getElementById('busTable');
+            clearTable(table);
+
+            buses.forEach(bus => {
+                const row = table.insertRow();
+                Object.values(bus).forEach(value => {
+                    const cell = row.insertCell();
+                    cell.textContent = value;
+                });
+            });
+        }
+
+        // Function to clear the table
+        function clearTable(table) {
+            while (table.rows.length > 1) {
+                table.deleteRow(1);
+            }
+        }
+    </script>
+
+</body>
+
+</html>
